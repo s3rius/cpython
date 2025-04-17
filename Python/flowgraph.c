@@ -1813,6 +1813,7 @@ eval_const_binop(PyObject *left, int op, PyObject *right)
         case NB_SUBSCR:
             result = PyObject_GetItem(left, right);
             break;
+        case NB_FPIPE:
         case NB_MATRIX_MULTIPLY:
             // No builtin constants implement matrix multiplication
             break;

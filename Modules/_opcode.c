@@ -253,6 +253,7 @@ _opcode_get_nb_ops_impl(PyObject *module)
     ADD_NB_OP(NB_FLOOR_DIVIDE, "//");
     ADD_NB_OP(NB_LSHIFT, "<<");
     ADD_NB_OP(NB_MATRIX_MULTIPLY, "@");
+    ADD_NB_OP(NB_FPIPE, "|>");
     ADD_NB_OP(NB_MULTIPLY, "*");
     ADD_NB_OP(NB_REMAINDER, "%");
     ADD_NB_OP(NB_OR, "|");

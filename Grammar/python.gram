@@ -740,13 +740,13 @@ inversion[expr_ty] (memo):
 # --------------------
 
 comparison[expr_ty]:
-    | a=bitwise_or b=compare_op_bitwise_or_pair+ {
+    | a=fpipe_expr b=compare_op_bitwise_or_pair+ {
         _PyAST_Compare(
             a,
             CHECK(asdl_int_seq*, _PyPegen_get_cmpops(p, b)),
             CHECK(asdl_expr_seq*, _PyPegen_get_exprs(p, b)),
             EXTRA) }
-    | bitwise_or
+    | fpipe_expr
 
 compare_op_bitwise_or_pair[CmpopExprPair*]:
     | eq_bitwise_or
@@ -760,20 +760,24 @@ compare_op_bitwise_or_pair[CmpopExprPair*]:
     | isnot_bitwise_or
     | is_bitwise_or
 
-eq_bitwise_or[CmpopExprPair*]: '==' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Eq, a) }
+eq_bitwise_or[CmpopExprPair*]: '==' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, Eq, a) }
 noteq_bitwise_or[CmpopExprPair*]:
-    | (tok='!=' { _PyPegen_check_barry_as_flufl(p, tok) ? NULL : tok}) a=bitwise_or {_PyPegen_cmpop_expr_pair(p, NotEq, a) }
-lte_bitwise_or[CmpopExprPair*]: '<=' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, LtE, a) }
-lt_bitwise_or[CmpopExprPair*]: '<' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Lt, a) }
-gte_bitwise_or[CmpopExprPair*]: '>=' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, GtE, a) }
-gt_bitwise_or[CmpopExprPair*]: '>' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Gt, a) }
-notin_bitwise_or[CmpopExprPair*]: 'not' 'in' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, NotIn, a) }
-in_bitwise_or[CmpopExprPair*]: 'in' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, In, a) }
-isnot_bitwise_or[CmpopExprPair*]: 'is' 'not' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, IsNot, a) }
-is_bitwise_or[CmpopExprPair*]: 'is' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Is, a) }
+    | (tok='!=' { _PyPegen_check_barry_as_flufl(p, tok) ? NULL : tok}) a=fpipe_expr {_PyPegen_cmpop_expr_pair(p, NotEq, a) }
+lte_bitwise_or[CmpopExprPair*]: '<=' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, LtE, a) }
+lt_bitwise_or[CmpopExprPair*]: '<' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, Lt, a) }
+gte_bitwise_or[CmpopExprPair*]: '>=' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, GtE, a) }
+gt_bitwise_or[CmpopExprPair*]: '>' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, Gt, a) }
+notin_bitwise_or[CmpopExprPair*]: 'not' 'in' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, NotIn, a) }
+in_bitwise_or[CmpopExprPair*]: 'in' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, In, a) }
+isnot_bitwise_or[CmpopExprPair*]: 'is' 'not' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, IsNot, a) }
+is_bitwise_or[CmpopExprPair*]: 'is' a=fpipe_expr { _PyPegen_cmpop_expr_pair(p, Is, a) }
 
 # Bitwise operators
 # -----------------
+
+fpipe_expr[expr_ty]:
+  | a=fpipe_expr '|>' b=bitwise_or { _PyAST_BinOp(a, FPipe, b, EXTRA) }
+  | bitwise_or
 
 bitwise_or[expr_ty]:
     | a=bitwise_or '|' b=bitwise_xor { _PyAST_BinOp(a, BitOr, b, EXTRA) }

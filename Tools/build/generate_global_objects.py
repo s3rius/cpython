@@ -123,6 +123,8 @@ IDENTIFIERS = [
     '__rdivmod__',
     '__buffer__',
     '__release_buffer__',
+    '__fpipe__',
+    '__rfpipe__',
 
     #Workarounds for GH-108918
     'alias',

@@ -1185,6 +1185,7 @@ BINARY_FUNC(PyNumber_MatrixMultiply, nb_matrix_multiply, "@")
 BINARY_FUNC(PyNumber_FloorDivide, nb_floor_divide, "//")
 BINARY_FUNC(PyNumber_TrueDivide, nb_true_divide, "/")
 BINARY_FUNC(PyNumber_Remainder, nb_remainder, "%")
+BINARY_FUNC(PyNumber_FPipe, nb_fpipe, "|>")
 
 PyObject *
 PyNumber_Power(PyObject *v, PyObject *w, PyObject *z)

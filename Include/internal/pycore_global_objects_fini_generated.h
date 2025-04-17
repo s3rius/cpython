@@ -628,6 +628,7 @@ _PyStaticObjects_CheckRefcnt(PyInterpreterState *interp) {
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__floor__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__floordiv__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__format__));
+    _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__fpipe__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__fspath__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__ge__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__get__));
@@ -704,6 +705,7 @@ _PyStaticObjects_CheckRefcnt(PyInterpreterState *interp) {
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__repr__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__reversed__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__rfloordiv__));
+    _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__rfpipe__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__rlshift__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__rmatmul__));
     _PyStaticObject_CheckRefcnt((PyObject *)&_Py_ID(__rmod__));

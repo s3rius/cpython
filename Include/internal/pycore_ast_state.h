@@ -56,6 +56,8 @@ struct ast_state {
     PyObject *ExceptHandler_type;
     PyObject *Expr_type;
     PyObject *Expression_type;
+    PyObject *FPipe_singleton;
+    PyObject *FPipe_type;
     PyObject *FloorDiv_singleton;
     PyObject *FloorDiv_type;
     PyObject *For_type;

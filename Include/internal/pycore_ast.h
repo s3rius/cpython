@@ -24,7 +24,7 @@ typedef enum _boolop { And=1, Or=2 } boolop_ty;
 
 typedef enum _operator { Add=1, Sub=2, Mult=3, MatMult=4, Div=5, Mod=6, Pow=7,
                          LShift=8, RShift=9, BitOr=10, BitXor=11, BitAnd=12,
-                         FloorDiv=13 } operator_ty;
+                         FloorDiv=13, FPipe=14 } operator_ty;
 
 typedef enum _unaryop { Invert=1, Not=2, UAdd=3, USub=4 } unaryop_ty;
 
@@ -356,7 +356,7 @@ struct _stmt {
     int end_col_offset;
 };
 
-enum _expr_kind {BoolOp_kind=1, NamedExpr_kind=2, BinOp_kind=3, UnaryOp_kind=4,
+enum _expr_kind {BinOp_kind=1, BoolOp_kind=2, NamedExpr_kind=3, UnaryOp_kind=4,
                   Lambda_kind=5, IfExp_kind=6, Dict_kind=7, Set_kind=8,
                   ListComp_kind=9, SetComp_kind=10, DictComp_kind=11,
                   GeneratorExp_kind=12, Await_kind=13, Yield_kind=14,
@@ -368,6 +368,12 @@ struct _expr {
     enum _expr_kind kind;
     union {
         struct {
+            expr_ty left;
+            operator_ty op;
+            expr_ty right;
+        } BinOp;
+
+        struct {
             boolop_ty op;
             asdl_expr_seq *values;
         } BoolOp;
@@ -376,12 +382,6 @@ struct _expr {
             expr_ty target;
             expr_ty value;
         } NamedExpr;
-
-        struct {
-            expr_ty left;
-            operator_ty op;
-            expr_ty right;
-        } BinOp;
 
         struct {
             unaryop_ty op;
@@ -770,15 +770,15 @@ stmt_ty _PyAST_Break(int lineno, int col_offset, int end_lineno, int
                      end_col_offset, PyArena *arena);
 stmt_ty _PyAST_Continue(int lineno, int col_offset, int end_lineno, int
                         end_col_offset, PyArena *arena);
+expr_ty _PyAST_BinOp(expr_ty left, operator_ty op, expr_ty right, int lineno,
+                     int col_offset, int end_lineno, int end_col_offset,
+                     PyArena *arena);
 expr_ty _PyAST_BoolOp(boolop_ty op, asdl_expr_seq * values, int lineno, int
                       col_offset, int end_lineno, int end_col_offset, PyArena
                       *arena);
 expr_ty _PyAST_NamedExpr(expr_ty target, expr_ty value, int lineno, int
                          col_offset, int end_lineno, int end_col_offset,
                          PyArena *arena);
-expr_ty _PyAST_BinOp(expr_ty left, operator_ty op, expr_ty right, int lineno,
-                     int col_offset, int end_lineno, int end_col_offset,
-                     PyArena *arena);
 expr_ty _PyAST_UnaryOp(unaryop_ty op, expr_ty operand, int lineno, int
                        col_offset, int end_lineno, int end_col_offset, PyArena
                        *arena);

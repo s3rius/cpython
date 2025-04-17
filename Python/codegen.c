@@ -3111,6 +3111,9 @@ addop_binary(compiler *c, location loc, operator_ty binop,
         case MatMult:
             oparg = inplace ? NB_INPLACE_MATRIX_MULTIPLY : NB_MATRIX_MULTIPLY;
             break;
+        case FPipe:
+            oparg = NB_FPIPE;
+            break;
         case Div:
             oparg = inplace ? NB_INPLACE_TRUE_DIVIDE : NB_TRUE_DIVIDE;
             break;

@@ -678,6 +678,7 @@ WRAP_BINARY(proxy_ior, PyNumber_InPlaceOr)
 WRAP_UNARY(proxy_index, PyNumber_Index)
 WRAP_BINARY(proxy_matmul, PyNumber_MatrixMultiply)
 WRAP_BINARY(proxy_imatmul, PyNumber_InPlaceMatrixMultiply)
+WRAP_BINARY(proxy_fpipe, PyNumber_FPipe)
 
 static int
 proxy_bool(PyObject *proxy)
@@ -828,6 +829,7 @@ static PyNumberMethods proxy_as_number = {
     proxy_index,            /*nb_index*/
     proxy_matmul,           /*nb_matrix_multiply*/
     proxy_imatmul,          /*nb_inplace_matrix_multiply*/
+    proxy_fpipe,            /*nb_fpipe*/
 };
 
 static PySequenceMethods proxy_as_sequence = {

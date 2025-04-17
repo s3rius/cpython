@@ -626,6 +626,7 @@ extern "C" {
     INIT_ID(__floor__), \
     INIT_ID(__floordiv__), \
     INIT_ID(__format__), \
+    INIT_ID(__fpipe__), \
     INIT_ID(__fspath__), \
     INIT_ID(__ge__), \
     INIT_ID(__get__), \
@@ -702,6 +703,7 @@ extern "C" {
     INIT_ID(__repr__), \
     INIT_ID(__reversed__), \
     INIT_ID(__rfloordiv__), \
+    INIT_ID(__rfpipe__), \
     INIT_ID(__rlshift__), \
     INIT_ID(__rmatmul__), \
     INIT_ID(__rmod__), \

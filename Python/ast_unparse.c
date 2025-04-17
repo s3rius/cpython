@@ -162,6 +162,7 @@ append_ast_binop(PyUnicodeWriter *writer, expr_ty e, int level)
     bool rassoc = false;  /* is right-associative? */
 
     switch (e->v.BinOp.op) {
+    case FPipe: op = " |> "; pr = PR_TERM; break;
     case Add: op = " + "; pr = PR_ARITH; break;
     case Sub: op = " - "; pr = PR_ARITH; break;
     case Mult: op = " * "; pr = PR_TERM; break;

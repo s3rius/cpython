@@ -57,9 +57,9 @@ module Python
           attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
 
           -- BoolOp() can use left & right?
-    expr = BoolOp(boolop op, expr* values)
+    expr = BinOp(expr left, operator op, expr right)
+         | BoolOp(boolop op, expr* values)
          | NamedExpr(expr target, expr value)
-         | BinOp(expr left, operator op, expr right)
          | UnaryOp(unaryop op, expr operand)
          | Lambda(arguments args, expr body)
          | IfExp(expr test, expr body, expr orelse)
@@ -100,7 +100,7 @@ module Python
     boolop = And | Or
 
     operator = Add | Sub | Mult | MatMult | Div | Mod | Pow | LShift
-                 | RShift | BitOr | BitXor | BitAnd | FloorDiv
+                 | RShift | BitOr | BitXor | BitAnd | FloorDiv | FPipe
 
     unaryop = Invert | Not | UAdd | USub
 

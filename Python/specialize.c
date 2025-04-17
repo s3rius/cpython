@@ -610,6 +610,7 @@ _PyCode_Quicken(_Py_CODEUNIT *instructions, Py_ssize_t size, int enable_counters
 #define SPEC_FAIL_BINARY_OP_SUBSCR_BYTES                48
 #define SPEC_FAIL_BINARY_OP_SUBSCR_STRUCTTIME           49
 #define SPEC_FAIL_BINARY_OP_SUBSCR_RANGE                50
+#define SPEC_FAIL_BINARY_OP_FPIPE                       51
 
 /* Calls */
 
@@ -2424,6 +2425,8 @@ binary_op_fail_kind(int oparg, PyObject *lhs, PyObject *rhs)
                 return SPEC_FAIL_BINARY_OP_SUBSCR_OTHER_SLICE;
             }
             return SPEC_FAIL_BINARY_OP_SUBSCR;
+        case NB_FPIPE:
+            return SPEC_FAIL_BINARY_OP_FPIPE;
     }
     Py_UNREACHABLE();
 }

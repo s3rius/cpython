@@ -822,6 +822,7 @@ class Unparser(NodeVisitor):
         "BitAnd": "&",
         "FloorDiv": "//",
         "Pow": "**",
+        "FPipe": "|>",
     }
 
     binop_precedence = {
@@ -838,6 +839,7 @@ class Unparser(NodeVisitor):
         "&": _Precedence.BAND,
         "//": _Precedence.TERM,
         "**": _Precedence.POWER,
+        "|>": _Precedence.TERM,
     }
 
     binop_rassoc = frozenset(("**",))

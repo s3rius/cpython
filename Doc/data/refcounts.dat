@@ -1594,6 +1594,10 @@ PyNumber_MatrixMultiply:PyObject*::+1:
 PyNumber_MatrixMultiply:PyObject*:o1:0:
 PyNumber_MatrixMultiply:PyObject*:o2:0:
 
+PyNumber_FPipe:PyObject*::+1:
+PyNumber_FPipe:PyObject*:o1:0:
+PyNumber_FPipe:PyObject*:o2:0:
+
 PyNumber_Multiply:PyObject*::+1:
 PyNumber_Multiply:PyObject*:o1:0:
 PyNumber_Multiply:PyObject*:o2:0:

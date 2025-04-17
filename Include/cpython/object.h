@@ -103,6 +103,7 @@ typedef struct {
 
     binaryfunc nb_matrix_multiply;
     binaryfunc nb_inplace_matrix_multiply;
+    binaryfunc nb_fpipe;
 } PyNumberMethods;
 
 typedef struct {

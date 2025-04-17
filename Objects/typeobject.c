@@ -9982,6 +9982,7 @@ SLOT1BIN(slot_nb_multiply, nb_multiply, __mul__, __rmul__)
 SLOT1BIN(slot_nb_matrix_multiply, nb_matrix_multiply, __matmul__, __rmatmul__)
 SLOT1BIN(slot_nb_remainder, nb_remainder, __mod__, __rmod__)
 SLOT1BIN(slot_nb_divmod, nb_divmod, __divmod__, __rdivmod__)
+SLOT1BIN(slot_nb_fpipe, nb_fpipe, __fpipe__, __rfpipe__)
 
 static PyObject *slot_nb_power(PyObject *, PyObject *, PyObject *);
 
@@ -10954,6 +10955,8 @@ static pytype_slotdef slotdefs[] = {
             "@"),
     RBINSLOT(__rmatmul__, nb_matrix_multiply, slot_nb_matrix_multiply,
              "@"),
+    BINSLOT(__fpipe__, nb_fpipe, slot_nb_fpipe, "|>"),
+    RBINSLOT(__rfpipe__, nb_fpipe, slot_nb_fpipe, "|>"),
     IBSLOT(__imatmul__, nb_inplace_matrix_multiply, slot_nb_inplace_matrix_multiply,
            wrap_binaryfunc, "@="),
     MPSLOT(__len__, mp_length, slot_mp_length, wrap_lenfunc,

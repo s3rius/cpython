@@ -73,6 +73,8 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->ExceptHandler_type);
     Py_CLEAR(state->Expr_type);
     Py_CLEAR(state->Expression_type);
+    Py_CLEAR(state->FPipe_singleton);
+    Py_CLEAR(state->FPipe_type);
     Py_CLEAR(state->FloorDiv_singleton);
     Py_CLEAR(state->FloorDiv_type);
     Py_CLEAR(state->For_type);
@@ -545,6 +547,11 @@ static const char * const expr_attributes[] = {
     "end_col_offset",
 };
 static PyObject* ast2obj_expr(struct ast_state *state, void*);
+static const char * const BinOp_fields[]={
+    "left",
+    "op",
+    "right",
+};
 static const char * const BoolOp_fields[]={
     "op",
     "values",
@@ -552,11 +559,6 @@ static const char * const BoolOp_fields[]={
 static const char * const NamedExpr_fields[]={
     "target",
     "value",
-};
-static const char * const BinOp_fields[]={
-    "left",
-    "op",
-    "right",
 };
 static const char * const UnaryOp_fields[]={
     "op",
@@ -2445,6 +2447,51 @@ add_ast_annotations(struct ast_state *state)
         return 0;
     }
     Py_DECREF(Continue_annotations);
+    PyObject *BinOp_annotations = PyDict_New();
+    if (!BinOp_annotations) return 0;
+    {
+        PyObject *type = state->expr_type;
+        Py_INCREF(type);
+        cond = PyDict_SetItemString(BinOp_annotations, "left", type) == 0;
+        Py_DECREF(type);
+        if (!cond) {
+            Py_DECREF(BinOp_annotations);
+            return 0;
+        }
+    }
+    {
+        PyObject *type = state->operator_type;
+        Py_INCREF(type);
+        cond = PyDict_SetItemString(BinOp_annotations, "op", type) == 0;
+        Py_DECREF(type);
+        if (!cond) {
+            Py_DECREF(BinOp_annotations);
+            return 0;
+        }
+    }
+    {
+        PyObject *type = state->expr_type;
+        Py_INCREF(type);
+        cond = PyDict_SetItemString(BinOp_annotations, "right", type) == 0;
+        Py_DECREF(type);
+        if (!cond) {
+            Py_DECREF(BinOp_annotations);
+            return 0;
+        }
+    }
+    cond = PyObject_SetAttrString(state->BinOp_type, "_field_types",
+                                  BinOp_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(BinOp_annotations);
+        return 0;
+    }
+    cond = PyObject_SetAttrString(state->BinOp_type, "__annotations__",
+                                  BinOp_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(BinOp_annotations);
+        return 0;
+    }
+    Py_DECREF(BinOp_annotations);
     PyObject *BoolOp_annotations = PyDict_New();
     if (!BoolOp_annotations) return 0;
     {
@@ -2520,51 +2567,6 @@ add_ast_annotations(struct ast_state *state)
         return 0;
     }
     Py_DECREF(NamedExpr_annotations);
-    PyObject *BinOp_annotations = PyDict_New();
-    if (!BinOp_annotations) return 0;
-    {
-        PyObject *type = state->expr_type;
-        Py_INCREF(type);
-        cond = PyDict_SetItemString(BinOp_annotations, "left", type) == 0;
-        Py_DECREF(type);
-        if (!cond) {
-            Py_DECREF(BinOp_annotations);
-            return 0;
-        }
-    }
-    {
-        PyObject *type = state->operator_type;
-        Py_INCREF(type);
-        cond = PyDict_SetItemString(BinOp_annotations, "op", type) == 0;
-        Py_DECREF(type);
-        if (!cond) {
-            Py_DECREF(BinOp_annotations);
-            return 0;
-        }
-    }
-    {
-        PyObject *type = state->expr_type;
-        Py_INCREF(type);
-        cond = PyDict_SetItemString(BinOp_annotations, "right", type) == 0;
-        Py_DECREF(type);
-        if (!cond) {
-            Py_DECREF(BinOp_annotations);
-            return 0;
-        }
-    }
-    cond = PyObject_SetAttrString(state->BinOp_type, "_field_types",
-                                  BinOp_annotations) == 0;
-    if (!cond) {
-        Py_DECREF(BinOp_annotations);
-        return 0;
-    }
-    cond = PyObject_SetAttrString(state->BinOp_type, "__annotations__",
-                                  BinOp_annotations) == 0;
-    if (!cond) {
-        Py_DECREF(BinOp_annotations);
-        return 0;
-    }
-    Py_DECREF(BinOp_annotations);
     PyObject *UnaryOp_annotations = PyDict_New();
     if (!UnaryOp_annotations) return 0;
     {
@@ -3814,6 +3816,21 @@ add_ast_annotations(struct ast_state *state)
         return 0;
     }
     Py_DECREF(FloorDiv_annotations);
+    PyObject *FPipe_annotations = PyDict_New();
+    if (!FPipe_annotations) return 0;
+    cond = PyObject_SetAttrString(state->FPipe_type, "_field_types",
+                                  FPipe_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(FPipe_annotations);
+        return 0;
+    }
+    cond = PyObject_SetAttrString(state->FPipe_type, "__annotations__",
+                                  FPipe_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(FPipe_annotations);
+        return 0;
+    }
+    Py_DECREF(FPipe_annotations);
     PyObject *Invert_annotations = PyDict_New();
     if (!Invert_annotations) return 0;
     cond = PyObject_SetAttrString(state->Invert_type, "_field_types",
@@ -6248,9 +6265,9 @@ init_types(void *arg)
         "Continue");
     if (!state->Continue_type) return -1;
     state->expr_type = make_type(state, "expr", state->AST_type, NULL, 0,
-        "expr = BoolOp(boolop op, expr* values)\n"
+        "expr = BinOp(expr left, operator op, expr right)\n"
+        "     | BoolOp(boolop op, expr* values)\n"
         "     | NamedExpr(expr target, expr value)\n"
-        "     | BinOp(expr left, operator op, expr right)\n"
         "     | UnaryOp(unaryop op, expr operand)\n"
         "     | Lambda(arguments args, expr body)\n"
         "     | IfExp(expr test, expr body, expr orelse)\n"
@@ -6283,6 +6300,10 @@ init_types(void *arg)
     if (PyObject_SetAttr(state->expr_type, state->end_col_offset, Py_None) ==
         -1)
         return -1;
+    state->BinOp_type = make_type(state, "BinOp", state->expr_type,
+                                  BinOp_fields, 3,
+        "BinOp(expr left, operator op, expr right)");
+    if (!state->BinOp_type) return -1;
     state->BoolOp_type = make_type(state, "BoolOp", state->expr_type,
                                    BoolOp_fields, 2,
         "BoolOp(boolop op, expr* values)");
@@ -6291,10 +6312,6 @@ init_types(void *arg)
                                       NamedExpr_fields, 2,
         "NamedExpr(expr target, expr value)");
     if (!state->NamedExpr_type) return -1;
-    state->BinOp_type = make_type(state, "BinOp", state->expr_type,
-                                  BinOp_fields, 3,
-        "BinOp(expr left, operator op, expr right)");
-    if (!state->BinOp_type) return -1;
     state->UnaryOp_type = make_type(state, "UnaryOp", state->expr_type,
                                     UnaryOp_fields, 2,
         "UnaryOp(unaryop op, expr operand)");
@@ -6448,7 +6465,7 @@ init_types(void *arg)
     if (!state->Or_singleton) return -1;
     state->operator_type = make_type(state, "operator", state->AST_type, NULL,
                                      0,
-        "operator = Add | Sub | Mult | MatMult | Div | Mod | Pow | LShift | RShift | BitOr | BitXor | BitAnd | FloorDiv");
+        "operator = Add | Sub | Mult | MatMult | Div | Mod | Pow | LShift | RShift | BitOr | BitXor | BitAnd | FloorDiv | FPipe");
     if (!state->operator_type) return -1;
     if (add_attributes(state, state->operator_type, NULL, 0) < 0) return -1;
     state->Add_type = make_type(state, "Add", state->operator_type, NULL, 0,
@@ -6541,6 +6558,12 @@ init_types(void *arg)
                                                   *)state->FloorDiv_type, NULL,
                                                   NULL);
     if (!state->FloorDiv_singleton) return -1;
+    state->FPipe_type = make_type(state, "FPipe", state->operator_type, NULL, 0,
+        "FPipe");
+    if (!state->FPipe_type) return -1;
+    state->FPipe_singleton = PyType_GenericNew((PyTypeObject
+                                               *)state->FPipe_type, NULL, NULL);
+    if (!state->FPipe_singleton) return -1;
     state->unaryop_type = make_type(state, "unaryop", state->AST_type, NULL, 0,
         "unaryop = Invert | Not | UAdd | USub");
     if (!state->unaryop_type) return -1;
@@ -7591,6 +7614,40 @@ _PyAST_Continue(int lineno, int col_offset, int end_lineno, int end_col_offset,
 }
 
 expr_ty
+_PyAST_BinOp(expr_ty left, operator_ty op, expr_ty right, int lineno, int
+             col_offset, int end_lineno, int end_col_offset, PyArena *arena)
+{
+    expr_ty p;
+    if (!left) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'left' is required for BinOp");
+        return NULL;
+    }
+    if (!op) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'op' is required for BinOp");
+        return NULL;
+    }
+    if (!right) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'right' is required for BinOp");
+        return NULL;
+    }
+    p = (expr_ty)_PyArena_Malloc(arena, sizeof(*p));
+    if (!p)
+        return NULL;
+    p->kind = BinOp_kind;
+    p->v.BinOp.left = left;
+    p->v.BinOp.op = op;
+    p->v.BinOp.right = right;
+    p->lineno = lineno;
+    p->col_offset = col_offset;
+    p->end_lineno = end_lineno;
+    p->end_col_offset = end_col_offset;
+    return p;
+}
+
+expr_ty
 _PyAST_BoolOp(boolop_ty op, asdl_expr_seq * values, int lineno, int col_offset,
               int end_lineno, int end_col_offset, PyArena *arena)
 {
@@ -7634,40 +7691,6 @@ _PyAST_NamedExpr(expr_ty target, expr_ty value, int lineno, int col_offset, int
     p->kind = NamedExpr_kind;
     p->v.NamedExpr.target = target;
     p->v.NamedExpr.value = value;
-    p->lineno = lineno;
-    p->col_offset = col_offset;
-    p->end_lineno = end_lineno;
-    p->end_col_offset = end_col_offset;
-    return p;
-}
-
-expr_ty
-_PyAST_BinOp(expr_ty left, operator_ty op, expr_ty right, int lineno, int
-             col_offset, int end_lineno, int end_col_offset, PyArena *arena)
-{
-    expr_ty p;
-    if (!left) {
-        PyErr_SetString(PyExc_ValueError,
-                        "field 'left' is required for BinOp");
-        return NULL;
-    }
-    if (!op) {
-        PyErr_SetString(PyExc_ValueError,
-                        "field 'op' is required for BinOp");
-        return NULL;
-    }
-    if (!right) {
-        PyErr_SetString(PyExc_ValueError,
-                        "field 'right' is required for BinOp");
-        return NULL;
-    }
-    p = (expr_ty)_PyArena_Malloc(arena, sizeof(*p));
-    if (!p)
-        return NULL;
-    p->kind = BinOp_kind;
-    p->v.BinOp.left = left;
-    p->v.BinOp.op = op;
-    p->v.BinOp.right = right;
     p->lineno = lineno;
     p->col_offset = col_offset;
     p->end_lineno = end_lineno;
@@ -9381,6 +9404,26 @@ ast2obj_expr(struct ast_state *state, void* _o)
         return NULL;
     }
     switch (o->kind) {
+    case BinOp_kind:
+        tp = (PyTypeObject *)state->BinOp_type;
+        result = PyType_GenericNew(tp, NULL, NULL);
+        if (!result) goto failed;
+        value = ast2obj_expr(state, o->v.BinOp.left);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->left, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        value = ast2obj_operator(state, o->v.BinOp.op);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->op, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        value = ast2obj_expr(state, o->v.BinOp.right);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->right, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        break;
     case BoolOp_kind:
         tp = (PyTypeObject *)state->BoolOp_type;
         result = PyType_GenericNew(tp, NULL, NULL);
@@ -9409,26 +9452,6 @@ ast2obj_expr(struct ast_state *state, void* _o)
         value = ast2obj_expr(state, o->v.NamedExpr.value);
         if (!value) goto failed;
         if (PyObject_SetAttr(result, state->value, value) == -1)
-            goto failed;
-        Py_DECREF(value);
-        break;
-    case BinOp_kind:
-        tp = (PyTypeObject *)state->BinOp_type;
-        result = PyType_GenericNew(tp, NULL, NULL);
-        if (!result) goto failed;
-        value = ast2obj_expr(state, o->v.BinOp.left);
-        if (!value) goto failed;
-        if (PyObject_SetAttr(result, state->left, value) == -1)
-            goto failed;
-        Py_DECREF(value);
-        value = ast2obj_operator(state, o->v.BinOp.op);
-        if (!value) goto failed;
-        if (PyObject_SetAttr(result, state->op, value) == -1)
-            goto failed;
-        Py_DECREF(value);
-        value = ast2obj_expr(state, o->v.BinOp.right);
-        if (!value) goto failed;
-        if (PyObject_SetAttr(result, state->right, value) == -1)
             goto failed;
         Py_DECREF(value);
         break;
@@ -9901,6 +9924,8 @@ PyObject* ast2obj_operator(struct ast_state *state, operator_ty o)
             return Py_NewRef(state->BitAnd_singleton);
         case FloorDiv:
             return Py_NewRef(state->FloorDiv_singleton);
+        case FPipe:
+            return Py_NewRef(state->FPipe_singleton);
     }
     Py_UNREACHABLE();
 }
@@ -13640,6 +13665,72 @@ obj2ast_expr(struct ast_state *state, PyObject* obj, expr_ty* out, PyArena*
         if (res != 0) goto failed;
         Py_CLEAR(tmp);
     }
+    tp = state->BinOp_type;
+    isinstance = PyObject_IsInstance(obj, tp);
+    if (isinstance == -1) {
+        return -1;
+    }
+    if (isinstance) {
+        expr_ty left;
+        operator_ty op;
+        expr_ty right;
+
+        if (PyObject_GetOptionalAttr(obj, state->left, &tmp) < 0) {
+            return -1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"left\" missing from BinOp");
+            return -1;
+        }
+        else {
+            int res;
+            if (_Py_EnterRecursiveCall(" while traversing 'BinOp' node")) {
+                goto failed;
+            }
+            res = obj2ast_expr(state, tmp, &left, arena);
+            _Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        if (PyObject_GetOptionalAttr(obj, state->op, &tmp) < 0) {
+            return -1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"op\" missing from BinOp");
+            return -1;
+        }
+        else {
+            int res;
+            if (_Py_EnterRecursiveCall(" while traversing 'BinOp' node")) {
+                goto failed;
+            }
+            res = obj2ast_operator(state, tmp, &op, arena);
+            _Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        if (PyObject_GetOptionalAttr(obj, state->right, &tmp) < 0) {
+            return -1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"right\" missing from BinOp");
+            return -1;
+        }
+        else {
+            int res;
+            if (_Py_EnterRecursiveCall(" while traversing 'BinOp' node")) {
+                goto failed;
+            }
+            res = obj2ast_expr(state, tmp, &right, arena);
+            _Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        *out = _PyAST_BinOp(left, op, right, lineno, col_offset, end_lineno,
+                            end_col_offset, arena);
+        if (*out == NULL) goto failed;
+        return 0;
+    }
     tp = state->BoolOp_type;
     isinstance = PyObject_IsInstance(obj, tp);
     if (isinstance == -1) {
@@ -13754,72 +13845,6 @@ obj2ast_expr(struct ast_state *state, PyObject* obj, expr_ty* out, PyArena*
         }
         *out = _PyAST_NamedExpr(target, value, lineno, col_offset, end_lineno,
                                 end_col_offset, arena);
-        if (*out == NULL) goto failed;
-        return 0;
-    }
-    tp = state->BinOp_type;
-    isinstance = PyObject_IsInstance(obj, tp);
-    if (isinstance == -1) {
-        return -1;
-    }
-    if (isinstance) {
-        expr_ty left;
-        operator_ty op;
-        expr_ty right;
-
-        if (PyObject_GetOptionalAttr(obj, state->left, &tmp) < 0) {
-            return -1;
-        }
-        if (tmp == NULL) {
-            PyErr_SetString(PyExc_TypeError, "required field \"left\" missing from BinOp");
-            return -1;
-        }
-        else {
-            int res;
-            if (_Py_EnterRecursiveCall(" while traversing 'BinOp' node")) {
-                goto failed;
-            }
-            res = obj2ast_expr(state, tmp, &left, arena);
-            _Py_LeaveRecursiveCall();
-            if (res != 0) goto failed;
-            Py_CLEAR(tmp);
-        }
-        if (PyObject_GetOptionalAttr(obj, state->op, &tmp) < 0) {
-            return -1;
-        }
-        if (tmp == NULL) {
-            PyErr_SetString(PyExc_TypeError, "required field \"op\" missing from BinOp");
-            return -1;
-        }
-        else {
-            int res;
-            if (_Py_EnterRecursiveCall(" while traversing 'BinOp' node")) {
-                goto failed;
-            }
-            res = obj2ast_operator(state, tmp, &op, arena);
-            _Py_LeaveRecursiveCall();
-            if (res != 0) goto failed;
-            Py_CLEAR(tmp);
-        }
-        if (PyObject_GetOptionalAttr(obj, state->right, &tmp) < 0) {
-            return -1;
-        }
-        if (tmp == NULL) {
-            PyErr_SetString(PyExc_TypeError, "required field \"right\" missing from BinOp");
-            return -1;
-        }
-        else {
-            int res;
-            if (_Py_EnterRecursiveCall(" while traversing 'BinOp' node")) {
-                goto failed;
-            }
-            res = obj2ast_expr(state, tmp, &right, arena);
-            _Py_LeaveRecursiveCall();
-            if (res != 0) goto failed;
-            Py_CLEAR(tmp);
-        }
-        *out = _PyAST_BinOp(left, op, right, lineno, col_offset, end_lineno,
-                            end_col_offset, arena);
         if (*out == NULL) goto failed;
         return 0;
     }
@@ -15501,6 +15526,14 @@ obj2ast_operator(struct ast_state *state, PyObject* obj, operator_ty* out,
     }
     if (isinstance) {
         *out = FloorDiv;
+        return 0;
+    }
+    isinstance = PyObject_IsInstance(obj, state->FPipe_type);
+    if (isinstance == -1) {
+        return -1;
+    }
+    if (isinstance) {
+        *out = FPipe;
         return 0;
     }
 
@@ -17738,13 +17771,13 @@ astmodule_exec(PyObject *m)
     if (PyModule_AddObjectRef(m, "expr", state->expr_type) < 0) {
         return -1;
     }
+    if (PyModule_AddObjectRef(m, "BinOp", state->BinOp_type) < 0) {
+        return -1;
+    }
     if (PyModule_AddObjectRef(m, "BoolOp", state->BoolOp_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "NamedExpr", state->NamedExpr_type) < 0) {
-        return -1;
-    }
-    if (PyModule_AddObjectRef(m, "BinOp", state->BinOp_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "UnaryOp", state->UnaryOp_type) < 0) {
@@ -17883,6 +17916,9 @@ astmodule_exec(PyObject *m)
         return -1;
     }
     if (PyModule_AddObjectRef(m, "FloorDiv", state->FloorDiv_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "FPipe", state->FPipe_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "unaryop", state->unaryop_type) < 0) {

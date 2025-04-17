@@ -512,6 +512,7 @@ const binaryfunc _PyEval_BinaryOps[] = {
     [NB_FLOOR_DIVIDE] = PyNumber_FloorDivide,
     [NB_LSHIFT] = PyNumber_Lshift,
     [NB_MATRIX_MULTIPLY] = PyNumber_MatrixMultiply,
+    [NB_FPIPE] = PyNumber_FPipe,
     [NB_MULTIPLY] = PyNumber_Multiply,
     [NB_REMAINDER] = PyNumber_Remainder,
     [NB_OR] = PyNumber_Or,
